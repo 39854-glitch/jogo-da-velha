@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Jogo da Velha contra Inteligência Artificial com 3 níveis de dificuldade">
+    <meta name="author" content="Jogo da Velha IA">
+    <meta name="robots" content="index, follow">
+    <title>Jogo da Velha vs IA</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        html {
+            height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: #ff6b6b; /* fallback para navegadores antigos */
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-bottom: 30px;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .difficulty-buttons {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .difficulty-btn {
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .difficulty-btn.selected {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            border-color: #4ecdc4;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+        }
+
+        .player-info {
+            text-align: center;
+        }
+
+        .player-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .player-symbol {
+            font-size: 2rem;
+            margin: 5px 0;
+        }
+
+        .score {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .current-turn {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cell:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .cell.disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .cell.x {
+            color: #ff6b6b;
+        }
+
+        .cell.o {
+            color: #4ecdc4;
+        }
+
+        .game-result {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .winner {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+
+        .loser {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .tie {
+            background: linear-gradient(45deg, #ffa726, #ff9800);
+        }
+
+        .ai-thinking {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 12px;
+            margin: 10px 0;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                align-items: flex-start;
+                padding-top: 20px;
+            }
+            
+            .container {
+                padding: 20px;
+                margin: 0;
+                width: calc(100% - 20px);
+                max-width: none;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .cell {
+                font-size: 2rem;
+            }
+            
+            .game-info {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .difficulty-btn {
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .cell {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🎯 Jogo da Velha</h1>
+        <p class="subtitle">Desafie a Inteligência Artificial!</p>
+
+        <!-- Tela de Configuração -->
+        <div class="screen active" id="setupScreen">
+            <div class="input-group">
+                <label for="playerName">Seu Nome:</label>
+                <input type="text" id="playerName" placeholder="Digite seu nome" maxlength="15" autocomplete="name" required aria-describedby="name-help">
+                <small id="name-help" style="opacity: 0.7; font-size: 0.8rem;">Máximo 15 caracteres</small>
+            </div>
+
+            <div class="input-group">
+                <label>Escolha a Dificuldade da IA:</label>
+                <div class="difficulty-buttons">
+                    <button class="difficulty-btn" data-difficulty="easy" aria-label="Dificuldade Fácil - IA comete erros ocasionais">
+                        😊 Fácil
+                        <div style="font-size: 0.8rem; opacity: 0.8;">IA comete erros ocasionais</div>
+                    </button>
+                    <button class="difficulty-btn selected" data-difficulty="medium" aria-label="Dificuldade Média - IA joga bem mas não é perfeita">
+                        🤔 Médio
+                        <div style="font-size: 0.8rem; opacity: 0.8;">IA joga bem, mas não é perfeita</div>
+                    </button>
+                    <button class="difficulty-btn" data-difficulty="hard" aria-label="Dificuldade Difícil - IA nunca perde">
+                        🧠 Difícil
+                        <div style="font-size: 0.8rem; opacity: 0.8;">IA nunca perde (quase impossível ganhar)</div>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startGame()">Começar Jogo</button>
+        </div>
+
+        <!-- Tela do Jogo -->
+        <div class="screen" id="gameScreen">
+            <div class="game-info">
+                <div class="player-info">
+                    <div class="player-name" id="playerNameDisplay">Jogador</div>
+                    <div class="player-symbol x">✖</div>
+                    <div class="score">Vitórias: <span id="playerScore">0</span></div>
+                </div>
+                <div style="font-size: 1.5rem;">VS</div>
+                <div class="player-info">
+                    <div class="player-name">IA <span id="difficultyDisplay">Médio</span></div>
+                    <div class="player-symbol o">⭕</div>
+                    <div class="score">Vitórias: <span id="aiScore">0</span></div>
+                </div>
+            </div>
+
+            <div class="current-turn" id="turnIndicator">Sua vez! Escolha uma posição</div>
+
+            <div class="ai-thinking" id="aiThinking" style="display: none;">
+                🤖 IA está pensando...
+            </div>
+
+            <div class="game-board" id="gameBoard">
+                <div class="cell" data-index="0" onclick="makeMove(0)"></div>
+                <div class="cell" data-index="1" onclick="makeMove(1)"></div>
+                <div class="cell" data-index="2" onclick="makeMove(2)"></div>
+                <div class="cell" data-index="3" onclick="makeMove(3)"></div>
+                <div class="cell" data-index="4" onclick="makeMove(4)"></div>
+                <div class="cell" data-index="5" onclick="makeMove(5)"></div>
+                <div class="cell" data-index="6" onclick="makeMove(6)"></div>
+                <div class="cell" data-index="7" onclick="makeMove(7)"></div>
+                <div class="cell" data-index="8" onclick="makeMove(8)"></div>
+            </div>
+
+            <div class="game-result" id="gameResult" style="display: none;"></div>
+
+            <button class="btn btn-primary" onclick="newGame()" id="newGameBtn" style="display: none;">Nova Partida</button>
+            <button class="btn btn-secondary" onclick="backToSetup()">Voltar ao Menu</button>
+        </div>
+    </div>
+
+    <script>
+        // Estado do jogo
+        let gameState = {
+            playerName: '',
+            difficulty: 'medium',
+            board: Array(9).fill(''),
+            currentPlayer: 'X', // X = jogador, O = IA
+            gameActive: true,
+            playerScore: 0,
+            aiScore: 0
+        };
+
+        // Configurações de dificuldade
+        const difficultySettings = {
+            easy: {
+                name: 'Fácil',
+                errorRate: 0.3, // 30% chance de erro
+                randomMoveRate: 0.4 // 40% chance de movimento aleatório
+            },
+            medium: {
+                name: 'Médio',
+                errorRate: 0.15, // 15% chance de erro
+                randomMoveRate: 0.2 // 20% chance de movimento aleatório
+            },
+            hard: {
+                name: 'Difícil',
+                errorRate: 0.05, // 5% chance de erro
+                randomMoveRate: 0.1 // 10% chance de movimento aleatório
+            }
+        };
+
+        // Combinações vencedoras
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // linhas
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // colunas
+            [0, 4, 8], [2, 4, 6] // diagonais
+        ];
+
+        // Seleção de dificuldade
+        document.querySelectorAll('.difficulty-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                gameState.difficulty = this.dataset.difficulty;
+            });
+        });
+
+        // Iniciar jogo
+        function startGame() {
+            try {
+                const nameInput = document.getElementById('playerName');
+                const name = nameInput ? nameInput.value.trim() : '';
+                
+                if (!name) {
+                    showMessage('Por favor, digite seu nome!');
+                    return;
+                }
+
+                if (name.length > 15) {
+                    showMessage('Nome muito longo! Use até 15 caracteres.');
+                    return;
+                }
+
+                gameState.playerName = name;
+                
+                const playerNameDisplay = document.getElementById('playerNameDisplay');
+                const difficultyDisplay = document.getElementById('difficultyDisplay');
+                
+                if (playerNameDisplay) playerNameDisplay.textContent = name;
+                if (difficultyDisplay) difficultyDisplay.textContent = difficultySettings[gameState.difficulty].name;
+
+                showScreen('gameScreen');
+                resetBoard();
+            } catch (error) {
+                console.error('Erro ao iniciar jogo:', error);
+                showMessage('Erro ao iniciar o jogo. Tente novamente.');
+            }
+        }
+
+        // Mostrar mensagem de erro/aviso
+        function showMessage(message) {
+            const existingMessage = document.querySelector('.error-message');
+            if (existingMessage) {
+                existingMessage.remove();
+            }
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'error-message';
+            messageDiv.style.cssText = `
+                background: rgba(255, 107, 107, 0.2);
+                border: 2px solid #ff6b6b;
+                border-radius: 8px;
+                padding: 10px;
+                margin: 10px 0;
+                text-align: center;
+                font-size: 0.9rem;
+            `;
+            messageDiv.textContent = message;
+
+            const setupScreen = document.getElementById('setupScreen');
+            if (setupScreen) {
+                setupScreen.appendChild(messageDiv);
+                setTimeout(() => messageDiv.remove(), 3000);
+            }
+        }
+
+        // Resetar tabuleiro
+        function resetBoard() {
+            gameState.board = Array(9).fill('');
+            gameState.currentPlayer = 'X';
+            gameState.gameActive = true;
+
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.className = 'cell';
+            });
+
+            document.getElementById('gameResult').style.display = 'none';
+            document.getElementById('newGameBtn').style.display = 'none';
+            document.getElementById('aiThinking').style.display = 'none';
+            updateTurnIndicator();
+        }
+
+        // Atualizar indicador de turno
+        function updateTurnIndicator() {
+            const indicator = document.getElementById('turnIndicator');
+            if (!gameState.gameActive) return;
+
+            if (gameState.currentPlayer === 'X') {
+                indicator.textContent = 'Sua vez! Escolha uma posição';
+                indicator.style.background = 'rgba(255, 107, 107, 0.3)';
+            } else {
+                indicator.textContent = 'Vez da IA';
+                indicator.style.background = 'rgba(78, 205, 196, 0.3)';
+            }
+        }
+
+        // Fazer jogada do jogador
+        function makeMove(index) {
+            if (!gameState.gameActive || gameState.currentPlayer !== 'X' || gameState.board[index] !== '') {
+                return;
+            }
+
+            // Jogada do jogador
+            gameState.board[index] = 'X';
+            updateCell(index, 'X');
+
+            if (checkWinner()) return;
+
+            // Vez da IA
+            gameState.currentPlayer = 'O';
+            updateTurnIndicator();
+            
+            // Delay para simular pensamento da IA
+            document.getElementById('aiThinking').style.display = 'block';
+            setTimeout(() => {
+                makeAIMove();
+                document.getElementById('aiThinking').style.display = 'none';
+            }, Math.random() * 1000 + 500); // 0.5 a 1.5 segundos
+        }
+
+        // Atualizar célula visual
+        function updateCell(index, player) {
+            const cell = document.querySelector(`[data-index="${index}"]`);
+            cell.textContent = player === 'X' ? '✖' : '⭕';
+            cell.classList.add(player.toLowerCase());
+            cell.classList.add('disabled');
+        }
+
+        // IA fazer jogada
+        function makeAIMove() {
+            if (!gameState.gameActive) return;
+
+            const move = getBestMove();
+            if (move !== -1) {
+                gameState.board[move] = 'O';
+                updateCell(move, 'O');
+
+                if (checkWinner()) return;
+
+                gameState.currentPlayer = 'X';
+                updateTurnIndicator();
+            }
+        }
+
+        // Obter melhor jogada para IA
+        function getBestMove() {
+            const settings = difficultySettings[gameState.difficulty];
+            
+            // Chance de fazer movimento aleatório (para reduzir dificuldade)
+            if (Math.random() < settings.randomMoveRate) {
+                return getRandomMove();
+            }
+
+            // Tentar ganhar
+            let move = findWinningMove('O');
+            if (move !== -1) {
+                // Chance de erro mesmo tendo jogada vencedora
+                if (Math.random() < settings.errorRate) {
+                    return getRandomMove();
+                }
+                return move;
+            }
+
+            // Bloquear jogador
+            move = findWinningMove('X');
+            if (move !== -1) {
+                // Chance de erro ao bloquear
+                if (Math.random() < settings.errorRate) {
+                    return getRandomMove();
+                }
+                return move;
+            }
+
+            // Estratégia: centro, cantos, bordas
+            if (gameState.board[4] === '') return 4; // centro
+
+            const corners = [0, 2, 6, 8];
+            const availableCorners = corners.filter(i => gameState.board[i] === '');
+            if (availableCorners.length > 0) {
+                return availableCorners[Math.floor(Math.random() * availableCorners.length)];
+            }
+
+            return getRandomMove();
+        }
+
+        // Encontrar jogada vencedora
+        function findWinningMove(player) {
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                const line = [gameState.board[a], gameState.board[b], gameState.board[c]];
+                
+                if (line.filter(cell => cell === player).length === 2 && line.includes('')) {
+                    return combo[line.indexOf('')];
+                }
+            }
+            return -1;
+        }
+
+        // Movimento aleatório
+        function getRandomMove() {
+            const availableMoves = gameState.board
+                .map((cell, index) => cell === '' ? index : null)
+                .filter(val => val !== null);
+            
+            if (availableMoves.length === 0) return -1;
+            return availableMoves[Math.floor(Math.random() * availableMoves.length)];
+        }
+
+        // Verificar vencedor
+        function checkWinner() {
+            // Verificar combinações vencedoras
+            for (let combo of winningCombinations) {
+                const [a, b, c] = combo;
+                if (gameState.board[a] && 
+                    gameState.board[a] === gameState.board[b] && 
+                    gameState.board[a] === gameState.board[c]) {
+                    
+                    endGame(gameState.board[a]);
+                    return true;
+                }
+            }
+
+            // Verificar empate
+            if (!gameState.board.includes('')) {
+                endGame('tie');
+                return true;
+            }
+
+            return false;
+        }
+
+        // Finalizar jogo
+        function endGame(winner) {
+            gameState.gameActive = false;
+            const resultDiv = document.getElementById('gameResult');
+            const newGameBtn = document.getElementById('newGameBtn');
+
+            // Desabilitar todas as células
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.classList.add('disabled');
+            });
+
+            if (winner === 'X') {
+                gameState.playerScore++;
+                resultDiv.textContent = `🎉 ${gameState.playerName} Venceu!`;
+                resultDiv.className = 'game-result winner';
+                document.getElementById('playerScore').textContent = gameState.playerScore;
+            } else if (winner === 'O') {
+                gameState.aiScore++;
+                resultDiv.textContent = '🤖 IA Venceu!';
+                resultDiv.className = 'game-result loser';
+                document.getElementById('aiScore').textContent = gameState.aiScore;
+            } else {
+                resultDiv.textContent = '🤝 Empate!';
+                resultDiv.className = 'game-result tie';
+            }
+
+            resultDiv.style.display = 'block';
+            newGameBtn.style.display = 'block';
+            document.getElementById('turnIndicator').textContent = 'Jogo Finalizado';
+        }
+
+        // Nova partida
+        function newGame() {
+            resetBoard();
+        }
+
+        // Voltar ao menu
+        function backToSetup() {
+            gameState.playerScore = 0;
+            gameState.aiScore = 0;
+            document.getElementById('playerScore').textContent = '0';
+            document.getElementById('aiScore').textContent = '0';
+            showScreen('setupScreen');
+        }
+
+        // Mostrar tela
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        // Enter para começar
+        document.getElementById('playerName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startGame();
+            }
+        });
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('playerName').focus();
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98e783f857cb94ad',t:'MTc2MDQ0OTUwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
